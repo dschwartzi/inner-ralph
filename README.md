@@ -26,9 +26,11 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 ## Key Features
 
 - **AI-generated task breakdown** - Claude analyzes your codebase and creates the task graph (no manual PRD needed)
+- **Approval before execution** - Review and modify the plan before any work begins
 - **Beads for persistence** - Task state survives context compaction via git-backed `.beads/` directory
 - **Intelligent orchestration** - Claude supervises subagents and can intervene when things go wrong
 - **Natural intervention** - Talk to Claude to course-correct, no need to kill scripts
+- **Built-in flags** - `--dry-run`, `--status`, `--cancel` for full control
 
 ## Installation
 
@@ -62,6 +64,49 @@ After installing the plugin, invoke directly:
 /inner-loop-ralph implement user authentication with OAuth
 ```
 
+### CLI Flags
+
+```bash
+# Preview task breakdown without creating issues
+/inner-loop-ralph --dry-run implement auth
+
+# Check progress of current session
+/inner-loop-ralph --status
+
+# Stop a running session
+/inner-loop-ralph --cancel
+```
+
+### Example Session (with Approval)
+
+```
+> /inner-loop-ralph add user authentication
+
+Analyzing codebase...
+Found: Express.js API
+Test command: npm test
+
+## Proposed Task Breakdown
+
+| ID | Task | Priority | Blocked By |
+|----|------|----------|------------|
+| inner-ralph-a1b | Set up auth dependencies | P0 | - |
+| inner-ralph-c2d | Create auth middleware | P1 | a1b |
+| inner-ralph-e3f | Add login/register endpoints | P1 | a1b |
+| inner-ralph-g4h | Write integration tests | P2 | c2d, e3f |
+
+**Summary:** 4 tasks, 1 ready to start, 3 blocked
+
+Would you like me to proceed with this plan?
+
+> yes
+
+Starting autonomous execution...
+[Subagent works through tasks]
+
+Completed 4/4 tasks. All tests passing.
+```
+
 ### Enable `ralph:` Protocol (Optional)
 
 To use the `ralph:` prefix, add this to your `~/.claude/CLAUDE.md`:
@@ -71,24 +116,6 @@ To use the `ralph:` prefix, add this to your `~/.claude/CLAUDE.md`:
 
 When the user says `ralph: [description]`:
 1. Invoke: /inner-loop-ralph [description]
-```
-
-Then you can use:
-
-```
-> ralph: implement user authentication with OAuth
-
-Analyzing codebase...
-Found: Express.js API
-Test command: npm test
-
-Creating tasks:
-  ✓ inner-ralph-a1b: Set up OAuth dependencies
-  ✓ inner-ralph-c2d: Create OAuth middleware
-  → inner-ralph-e3f: Add callback endpoints (blocked by c2d)
-  → inner-ralph-g4h: Write integration tests (blocked by e3f)
-
-Starting autonomous execution...
 ```
 
 ### Monitor Progress
@@ -147,11 +174,12 @@ Then continue seamlessly - all task state is preserved in `.beads/`.
 
 ## How It Works
 
-1. **Parse Request** - Extract the task description from your `ralph:` message
+1. **Parse Request** - Extract the task description and any flags (`--dry-run`, etc.)
 2. **Initialize Beads** - Run `bd init` if not already set up
 3. **Analyze & Plan** - Scan project, break work into subtasks, create beads issues with dependencies
-4. **Execute** - Spawn a Task tool subagent to work through `bd ready` tasks
-5. **Report** - Show completion status, remaining tasks, or blockers
+4. **Get Approval** - Present the task breakdown and wait for user confirmation
+5. **Execute** - Spawn a Task tool subagent to work through `bd ready` tasks
+6. **Report** - Show completion status, remaining tasks, or blockers
 
 ### Architecture
 
