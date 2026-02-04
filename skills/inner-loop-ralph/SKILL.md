@@ -71,6 +71,36 @@ You are starting an Inner Loop Ralph session - an AI-supervised autonomous workf
    bd blocked  # Show dependency graph
    ```
 
+**Phase 2.5: Get User Approval**
+
+Present the task breakdown to the user and ask for approval before executing:
+
+```
+## Proposed Task Breakdown
+
+I've analyzed the project and created the following tasks:
+
+[Show bd list output with task titles and dependencies]
+
+**Summary:**
+- Total tasks: N
+- Ready to start: M (no blockers)
+- Blocked: K (waiting on dependencies)
+
+**Estimated approach:**
+[Brief description of the implementation strategy]
+
+Would you like me to proceed with this plan?
+- **Yes** - Start autonomous execution
+- **Modify** - Tell me what to change
+- **Cancel** - Delete these tasks and stop
+```
+
+Wait for user response before proceeding:
+- If "yes" or approved: Continue to Phase 3
+- If modification requested: Update tasks with `bd update` or `bd delete` and `bd create`, then re-present
+- If cancelled: Run `bd delete <all-task-ids>` and stop
+
 **Phase 3: Execute via Subagent**
 
 1. Spawn a background subagent using the Task tool:
@@ -157,14 +187,28 @@ Claude: Analyzing project...
 Found: Express.js API (package.json)
 Test command: npm test
 
-Creating task breakdown:
-  inner-ralph-a1b: Set up JWT dependencies (P0)
-  inner-ralph-c2d: Create auth middleware (P1, blocked by a1b)
-  inner-ralph-e3f: Add login/register endpoints (P1, blocked by a1b)
-  inner-ralph-g4h: Write auth tests (P2, blocked by c2d, e3f)
-  inner-ralph-i5j: Add protected route examples (P2, blocked by c2d)
+## Proposed Task Breakdown
 
-Starting autonomous execution...
+I've analyzed the project and created the following tasks:
+
+| ID | Task | Priority | Blocked By |
+|----|------|----------|------------|
+| inner-ralph-a1b | Set up JWT dependencies | P0 | - |
+| inner-ralph-c2d | Create auth middleware | P1 | a1b |
+| inner-ralph-e3f | Add login/register endpoints | P1 | a1b |
+| inner-ralph-g4h | Write auth tests | P2 | c2d, e3f |
+| inner-ralph-i5j | Add protected route examples | P2 | c2d |
+
+**Summary:** 5 tasks, 1 ready to start, 4 blocked
+
+**Approach:** First install jsonwebtoken and bcrypt, then create middleware
+for JWT verification, add auth endpoints, and finally add tests.
+
+Would you like me to proceed with this plan?
+
+User: yes
+
+Claude: Starting autonomous execution...
 
 [Spawns subagent]
 

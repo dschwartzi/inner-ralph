@@ -1,10 +1,22 @@
 # Inner Loop Ralph
 
+**Status: Tested & Working** | v1.0.0 | [Changelog](CHANGELOG.md)
+
 AI-supervised autonomous agent loops for Claude Code using [beads](https://github.com/steveyegge/beads) for persistent task tracking.
 
 ## What is This?
 
 Inner Loop Ralph is an alternative to external bash-based automation (like [snarktank/ralph](https://github.com/snarktank/ralph)). Instead of spawning fresh Claude instances from a bash loop, it uses **Claude Code itself as the intelligent orchestrator**.
+
+### Why Let Claude Create the PRD?
+
+External Ralph implementations require you to manually write a `prd.json` file with task definitions. But Claude has become remarkably good at task decomposition:
+
+- **Subagents enable decomposition** - Breaking large goals into smaller, safer pieces while keeping contexts clean ([source](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/))
+- **Goal-driven planning** - Claude autonomously decides what tools it needs and plans next actions based on current state ([source](https://www.startuphub.ai/ai-news/ai-video/2026/anthropics-agent-sdk-unlocks-autonomous-development/))
+- **Structured breakdown** - With proper prompting, Claude can transform vague requirements into concrete, testable feature lists ([source](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents))
+
+Inner Loop Ralph leverages this by having Claude analyze your codebase and generate the task breakdown automatically. You can review and approve the plan before execution begins - getting the benefits of AI planning with human oversight.
 
 ```
 External Ralph:  Bash Loop → Spawn Claude → Do Task → Exit → Repeat
@@ -42,7 +54,26 @@ git clone https://github.com/dschwartzi/inner-ralph.git
 
 ## Usage
 
-Start any request with `ralph:` to trigger autonomous execution:
+### Direct Invocation
+
+After installing the plugin, invoke directly:
+
+```
+/inner-loop-ralph implement user authentication with OAuth
+```
+
+### Enable `ralph:` Protocol (Optional)
+
+To use the `ralph:` prefix, add this to your `~/.claude/CLAUDE.md`:
+
+```markdown
+## Ralph Protocol
+
+When the user says `ralph: [description]`:
+1. Invoke: /inner-loop-ralph [description]
+```
+
+Then you can use:
 
 ```
 > ralph: implement user authentication with OAuth
