@@ -1,0 +1,11 @@
+{
+  "name": "inner-ralph-marketplace",
+  "version": "1.0.0",
+  "description": "Inner Loop Ralph plugin marketplace",
+  "plugins": [
+    {
+      "name": "inner-loop-ralph",
+      "path": "."
+    }
+  ]
+}

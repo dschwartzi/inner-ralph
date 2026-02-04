@@ -41,77 +41,63 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 
 ## Installation
 
-### One-Line Setup
+### Prerequisites
 
+1. [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
+2. [Beads](https://github.com/steveyegge/beads) installed (`bd` command)
+
+**Quick beads install** (if you don't have it):
 ```bash
 git clone https://github.com/dschwartzi/inner-ralph.git
 ./inner-ralph/scripts/setup.sh
 ```
 
-The setup script is **safe to run multiple times** - it checks what's already installed:
-- Verifies Claude Code is present
-- Installs [beads](https://github.com/steveyegge/beads) only if not already installed
-- Won't overwrite existing installations
+### Install the Plugin (Choose One)
 
-### Install the Plugin
+#### Option 1: Easiest - Copy the Skill
 
-Inside Claude Code:
+Just copy the skill folder to your Claude config:
 
-```
-/plugin install dschwartzi/inner-ralph
-```
-
-Or install from a local clone:
-
-```
-/plugin install /path/to/inner-ralph
+```bash
+git clone https://github.com/dschwartzi/inner-ralph.git
+mkdir -p ~/.claude/skills
+cp -r inner-ralph/skills/inner-loop-ralph ~/.claude/skills/
 ```
 
-### Manual Prerequisites (if not using setup script)
+Then restart Claude Code. The skill will be available as `/inner-loop-ralph`.
 
-1. [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
-2. [Beads](https://github.com/steveyegge/beads) installed (`bd` command available)
+#### Option 2: Add as Marketplace
+
+```bash
+# Clone the repo
+git clone https://github.com/dschwartzi/inner-ralph.git
+
+# In Claude Code, add it as a marketplace source
+claude plugin marketplace add /path/to/inner-ralph
+claude plugin install inner-loop-ralph@inner-ralph-marketplace
+```
+
+#### Option 3: Just Use the Prompt
+
+Don't want to install anything? Copy the contents of [SKILL.md](skills/inner-loop-ralph/SKILL.md) into your `~/.claude/CLAUDE.md` file.
 
 ## Quick Start
 
-### Option A: From Terminal
-
 ```bash
-# Clone and run setup (safe to run if you already have beads installed)
+# 1. Clone and install beads (if needed)
 git clone https://github.com/dschwartzi/inner-ralph.git
 ./inner-ralph/scripts/setup.sh
 
-# Start Claude Code
+# 2. Copy the skill to your Claude config
+mkdir -p ~/.claude/skills
+cp -r inner-ralph/skills/inner-loop-ralph ~/.claude/skills/
+
+# 3. Restart Claude Code and try it
 claude
-
-# Inside Claude Code, install the plugin
-/plugin install dschwartzi/inner-ralph
-
-# Try it
-/inner-loop-ralph --dry-run outline a blog post about productivity tips
+/inner-loop-ralph --dry-run plan a birthday party
 ```
 
-### Option B: From Inside Claude Code
-
-Already in a Claude Code session? Do it all from there:
-
-```
-# Ask Claude to set it up
-Clone the inner-ralph repo and run the setup script, then install the plugin
-
-# Or do it step by step:
-# 1. Clone
-git clone https://github.com/dschwartzi/inner-ralph.git /tmp/inner-ralph
-
-# 2. Run setup (Claude can run this for you)
-/tmp/inner-ralph/scripts/setup.sh
-
-# 3. Install plugin
-/plugin install /tmp/inner-ralph
-
-# 4. Try it
-/inner-loop-ralph --dry-run plan a weekend trip
-```
+That's it. Three steps.
 
 ### What to Expect
 
