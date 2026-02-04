@@ -6,17 +6,24 @@ AI-supervised autonomous agent loops for Claude Code using [beads](https://githu
 
 ## What is This?
 
-Inner Loop Ralph is an alternative to external bash-based automation (like [snarktank/ralph](https://github.com/snarktank/ralph)). Instead of spawning fresh Claude instances from a bash loop, it uses **Claude Code itself as the intelligent orchestrator**.
+Inner Loop Ralph turns vague requests into structured, executable plans. You describe what you want to accomplish, and Claude:
 
-### Why Let Claude Create the PRD?
+1. **Breaks it down** into concrete subtasks with dependencies
+2. **Shows you the plan** for approval before doing anything
+3. **Executes autonomously** while you supervise
+4. **Persists state** so nothing gets lost if context compacts
+
+It works for any multi-step work: coding, research, writing, analysis, organization - anything that benefits from structured task decomposition.
+
+### Why Let Claude Create the Plan?
 
 External Ralph implementations require you to manually write a `prd.json` file with task definitions. But Claude has become remarkably good at task decomposition:
 
 - **Subagents enable decomposition** - Breaking large goals into smaller, safer pieces while keeping contexts clean ([source](https://skywork.ai/blog/claude-code-2-0-checkpoints-subagents-autonomous-coding/))
 - **Goal-driven planning** - Claude autonomously decides what tools it needs and plans next actions based on current state ([source](https://www.startuphub.ai/ai-news/ai-video/2026/anthropics-agent-sdk-unlocks-autonomous-development/))
-- **Structured breakdown** - With proper prompting, Claude can transform vague requirements into concrete, testable feature lists ([source](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents))
+- **Structured breakdown** - With proper prompting, Claude can transform vague requirements into concrete, actionable task lists ([source](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents))
 
-Inner Loop Ralph leverages this by having Claude analyze your codebase and generate the task breakdown automatically. You can review and approve the plan before execution begins - getting the benefits of AI planning with human oversight.
+Inner Loop Ralph leverages this by having Claude analyze your request and generate the task breakdown automatically. You review and approve the plan before execution begins - getting the benefits of AI planning with human oversight.
 
 ```
 External Ralph:  Bash Loop → Spawn Claude → Do Task → Exit → Repeat
@@ -25,7 +32,7 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 
 ## Key Features
 
-- **AI-generated task breakdown** - Claude analyzes your codebase and creates the task graph (no manual PRD needed)
+- **AI-generated task breakdown** - Describe what you want; Claude creates the task graph
 - **Approval before execution** - Review and modify the plan before any work begins
 - **Beads for persistence** - Task state survives context compaction via git-backed `.beads/` directory
 - **Intelligent orchestration** - Claude supervises subagents and can intervene when things go wrong
@@ -61,14 +68,14 @@ git clone https://github.com/dschwartzi/inner-ralph.git
 After installing the plugin, invoke directly:
 
 ```
-/inner-loop-ralph implement user authentication with OAuth
+/inner-loop-ralph <describe what you want to accomplish>
 ```
 
 ### CLI Flags
 
 ```bash
 # Preview task breakdown without creating issues
-/inner-loop-ralph --dry-run implement auth
+/inner-loop-ralph --dry-run <task description>
 
 # Check progress of current session
 /inner-loop-ralph --status
@@ -77,12 +84,42 @@ After installing the plugin, invoke directly:
 /inner-loop-ralph --cancel
 ```
 
-### Example Session (with Approval)
+### Example: Research Task
 
 ```
-> /inner-loop-ralph add user authentication
+> /inner-loop-ralph research competitive landscape for AI coding assistants
 
-Analyzing codebase...
+Analyzing request...
+
+## Proposed Task Breakdown
+
+| ID | Task | Priority | Blocked By |
+|----|------|----------|------------|
+| inner-ralph-a1b | Identify major AI coding tools | P0 | - |
+| inner-ralph-c2d | Research GitHub Copilot features | P1 | a1b |
+| inner-ralph-e3f | Research Cursor features | P1 | a1b |
+| inner-ralph-g4h | Research Codeium features | P1 | a1b |
+| inner-ralph-i5j | Compare pricing models | P2 | c2d, e3f, g4h |
+| inner-ralph-k6l | Write summary report | P2 | i5j |
+
+**Summary:** 6 tasks, 1 ready to start, 5 blocked
+
+Would you like me to proceed with this plan?
+
+> yes
+
+Starting autonomous execution...
+[Subagent works through tasks]
+
+Completed 6/6 tasks. Report ready at research/ai-coding-tools.md
+```
+
+### Example: Coding Task
+
+```
+> /inner-loop-ralph add user authentication with OAuth
+
+Analyzing project...
 Found: Express.js API
 Test command: npm test
 
@@ -105,6 +142,29 @@ Starting autonomous execution...
 [Subagent works through tasks]
 
 Completed 4/4 tasks. All tests passing.
+```
+
+### Example: Writing Task
+
+```
+> /inner-loop-ralph write a blog post about our new product launch
+
+Analyzing request...
+
+## Proposed Task Breakdown
+
+| ID | Task | Priority | Blocked By |
+|----|------|----------|------------|
+| inner-ralph-a1b | Outline key product features | P0 | - |
+| inner-ralph-c2d | Draft introduction hook | P1 | a1b |
+| inner-ralph-e3f | Write feature sections | P1 | a1b |
+| inner-ralph-g4h | Add customer quotes/testimonials | P1 | - |
+| inner-ralph-i5j | Write conclusion and CTA | P2 | c2d, e3f, g4h |
+| inner-ralph-k6l | Final review and polish | P2 | i5j |
+
+**Summary:** 6 tasks, 2 ready to start, 4 blocked
+
+Would you like me to proceed with this plan?
 ```
 
 ### Enable `ralph:` Protocol (Optional)
@@ -134,7 +194,7 @@ bd stats         # Overall progress
 Just talk to Claude:
 
 ```
-> The OAuth flow should use PKCE, not implicit flow
+> Actually, focus on the enterprise features instead
 
 Got it. Let me update the approach...
 [Updates tasks and continues]
@@ -154,7 +214,7 @@ Then continue seamlessly - all task state is preserved in `.beads/`.
 
 | Feature | External Ralph | Inner Loop Ralph |
 |---------|---------------|------------------|
-| Task creation | Manual `prd.json` | AI-generated from context |
+| Task creation | Manual `prd.json` | AI-generated from your description |
 | Loop mechanism | Bash script | Task tool subagent |
 | State persistence | `progress.txt` file | Git-backed beads |
 | Orchestration | Dumb loop | Intelligent supervision |
@@ -174,10 +234,10 @@ Then continue seamlessly - all task state is preserved in `.beads/`.
 
 ## How It Works
 
-1. **Parse Request** - Extract the task description and any flags (`--dry-run`, etc.)
+1. **Parse Request** - Extract your task description and any flags (`--dry-run`, etc.)
 2. **Initialize Beads** - Run `bd init` if not already set up
-3. **Analyze & Plan** - Scan project, break work into subtasks, create beads issues with dependencies
-4. **Get Approval** - Present the task breakdown and wait for user confirmation
+3. **Analyze & Plan** - Understand your goal, break it into subtasks, create beads issues with dependencies
+4. **Get Approval** - Present the task breakdown and wait for your confirmation
 5. **Execute** - Spawn a Task tool subagent to work through `bd ready` tasks
 6. **Report** - Show completion status, remaining tasks, or blockers
 
@@ -189,7 +249,7 @@ Then continue seamlessly - all task state is preserved in `.beads/`.
 │                                              │
 │  ┌──────────┐    ┌──────────┐               │
 │  │ Analyze  │───▶│  Create  │               │
-│  │ Codebase │    │  Tasks   │               │
+│  │ Request  │    │  Tasks   │               │
 │  └──────────┘    └────┬─────┘               │
 │                       │                      │
 │                       ▼                      │
