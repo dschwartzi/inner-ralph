@@ -54,9 +54,17 @@ git clone https://github.com/dschwartzi/inner-ralph.git
 
 ### Install the Plugin (Choose One)
 
-#### Option 1: Easiest - Copy the Skill
+#### Option 1: Official Marketplace (Coming Soon)
 
-Just copy the skill folder to your Claude config:
+Once approved, installation will be:
+```
+/plugin install inner-loop-ralph@claude-plugins-official
+```
+*(Submission pending - check back soon)*
+
+#### Option 2: Copy the Skill Folder
+
+Works right now:
 
 ```bash
 git clone https://github.com/dschwartzi/inner-ralph.git
@@ -64,18 +72,7 @@ mkdir -p ~/.claude/skills
 cp -r inner-ralph/skills/inner-loop-ralph ~/.claude/skills/
 ```
 
-Then restart Claude Code. The skill will be available as `/inner-loop-ralph`.
-
-#### Option 2: Add as Marketplace
-
-```bash
-# Clone the repo
-git clone https://github.com/dschwartzi/inner-ralph.git
-
-# In Claude Code, add it as a marketplace source
-claude plugin marketplace add /path/to/inner-ralph
-claude plugin install inner-loop-ralph@inner-ralph-marketplace
-```
+Restart Claude Code. The skill will be available as `/inner-loop-ralph`.
 
 #### Option 3: Just Use the Prompt
 
