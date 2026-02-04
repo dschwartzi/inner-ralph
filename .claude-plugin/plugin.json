@@ -1,6 +1,6 @@
 {
   "name": "inner-loop-ralph",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI-supervised autonomous agent loops using Claude Code as orchestrator with beads for persistent task tracking. An alternative to external bash loops.",
   "author": {
     "name": "dschwartzi",

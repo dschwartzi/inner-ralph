@@ -1,6 +1,6 @@
 # Inner Loop Ralph
 
-**Status: Tested & Working** | v1.0.0 | [Changelog](CHANGELOG.md)
+**Status: Tested & Working** | v1.1.0 | [Changelog](CHANGELOG.md) | [Dogfooding Example](examples/dogfooding-session.md)
 
 AI-supervised autonomous agent loops for Claude Code using [beads](https://github.com/steveyegge/beads) for persistent task tracking.
 

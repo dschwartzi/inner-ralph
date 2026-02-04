@@ -28,20 +28,67 @@ Launch an AI-supervised autonomous loop that uses beads for task tracking and th
 ## Arguments
 
 - `$ARGUMENTS` - Description of what to accomplish
+- `--dry-run` - Preview task breakdown without creating beads issues
+- `--status` - Show progress of current/recent inner-ralph session
+- `--cancel` - Stop a running inner-ralph session
 
 ## Instructions
 
 <instruction>
 You are starting an Inner Loop Ralph session - an AI-supervised autonomous workflow.
 
+**Phase 0: Parse Arguments**
+
+Check `$ARGUMENTS` for flags:
+- `--dry-run`: If present, show proposed tasks WITHOUT creating beads issues, then stop
+- `--status`: If present, run `bd list` and `bd stats`, show progress, then stop
+- `--cancel`: If present, show current tasks and offer to stop/clean up, then stop
+
+Extract the task description (everything that's not a flag).
+
+If `--status` flag:
+```
+## Inner Ralph Status
+
+[Run bd list to show current tasks]
+[Run bd stats to show progress]
+
+Subagent: [Check if any task is in_progress]
+```
+Then STOP - do not continue to other phases.
+
+If `--cancel` flag:
+```
+## Cancel Inner Ralph
+
+Current tasks:
+[Run bd list]
+
+Options:
+- Close in-progress tasks as incomplete
+- Delete all open tasks from this session
+- Keep tasks for later
+
+What would you like to do?
+```
+Then STOP after user responds.
+
+If `--dry-run` flag: Continue to Phase 1 and 2, but in Phase 2 step 3,
+do NOT actually run `bd create`. Instead, just OUTPUT what tasks WOULD be created.
+
 **Phase 1: Initialize**
 
-1. Parse the task description from `$ARGUMENTS`
+1. Parse the task description from `$ARGUMENTS` (excluding flags)
 2. Check if beads is initialized:
    ```bash
    bd stats 2>/dev/null || bd init
    ```
 3. If `bd init` was needed, commit the .beads/ directory
+4. Check for guardrails file and read if present:
+   ```bash
+   cat plans/guardrails.md 2>/dev/null || cat .claude/guardrails.md 2>/dev/null
+   ```
+   Include guardrails in subagent prompt (Phase 3) to prevent repeated failures
 
 **Phase 2: Analyze & Plan**
 
@@ -56,6 +103,25 @@ You are starting an Inner Loop Ralph session - an AI-supervised autonomous workf
    - Aim for 3-7 subtasks (not too granular, not too broad)
 
 3. Create beads issues for each subtask:
+
+   **If `--dry-run` mode:**
+   Do NOT run `bd create`. Instead, output a preview:
+   ```
+   ## Dry Run Preview (no issues created)
+
+   Would create the following tasks:
+
+   | # | Title | Priority | Depends On |
+   |---|-------|----------|------------|
+   | 1 | [task title] | P[0-4] | - |
+   | 2 | [task title] | P[0-4] | #1 |
+   ...
+
+   Run without --dry-run to create these tasks.
+   ```
+   Then STOP - do not continue to Phase 2.5 or Phase 3.
+
+   **Normal mode:**
    ```bash
    bd create --title="<subtask title>" --type=task --priority=<0-4> --description="<detailed description with acceptance criteria>"
    ```

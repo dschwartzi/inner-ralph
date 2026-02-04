@@ -2,6 +2,23 @@
 
 All notable changes to inner-loop-ralph will be documented in this file.
 
+## [1.1.0] - 2026-02-04
+
+### Added
+- `--dry-run` flag to preview task breakdown without creating beads issues
+- `--status` flag to show progress of current/recent sessions
+- `--cancel` flag to stop running sessions gracefully
+- Guardrails template (`templates/guardrails-template.md`) with beads-specific signs
+- Phase 0: Parse Arguments in SKILL.md for flag handling
+- Real-world "dogfooding" example (`examples/dogfooding-session.md`)
+
+### Changed
+- SKILL.md now reads guardrails file in Phase 1 if present
+- Subagent prompts include guardrails to prevent repeated failures
+
+### Meta
+- This release was built using Inner Loop Ralph itself (see dogfooding example)
+
 ## [1.0.0] - 2026-02-04
 
 ### Added
