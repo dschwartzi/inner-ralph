@@ -1,6 +1,6 @@
 #!/bin/bash
 # Inner Loop Ralph - Setup Script
-# Installs beads and verifies prerequisites
+# Installs beads and the inner-loop-ralph skill
 
 set -e
 
@@ -133,15 +133,33 @@ else
     exit 1
 fi
 
+# Install the skill
+echo ""
+echo "Installing inner-loop-ralph skill..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_SRC="$SCRIPT_DIR/../skills/inner-loop-ralph"
+SKILL_DST="$HOME/.claude/skills/inner-loop-ralph"
+
+if [ -d "$SKILL_SRC" ]; then
+    mkdir -p "$HOME/.claude/skills"
+    if [ -d "$SKILL_DST" ]; then
+        rm -rf "$SKILL_DST"
+        warn "Replaced existing skill installation"
+    fi
+    cp -r "$SKILL_SRC" "$SKILL_DST"
+    success "Skill installed to $SKILL_DST"
+else
+    error "Skill source not found at $SKILL_SRC"
+    echo "  Try running this script from the inner-ralph repo directory"
+    exit 1
+fi
+
 # Summary
 echo ""
 echo "=== Setup Complete ==="
 echo ""
-echo "Next step - copy the skill:"
+echo "The skill is ready to use (no restart needed)."
 echo ""
-echo "  mkdir -p ~/.claude/skills"
-echo "  cp -r \$(dirname \$0)/../skills/inner-loop-ralph ~/.claude/skills/"
-echo ""
-echo "Then try it (no restart needed):"
+echo "Try it now in Claude Code:"
 echo "  /inner-loop-ralph --dry-run plan a weekend trip"
 echo ""
