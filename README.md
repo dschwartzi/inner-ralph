@@ -41,39 +41,46 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 
 ## Installation
 
-### Prerequisites
+### One-Line Setup
+
+```bash
+# Clone and run setup (installs beads if needed)
+git clone https://github.com/dschwartzi/inner-ralph.git
+./inner-ralph/scripts/setup.sh
+```
+
+The setup script:
+- Checks for Claude Code
+- Installs [beads](https://github.com/steveyegge/beads) if not present
+- Verifies everything works
+
+### Install the Plugin
+
+Inside Claude Code:
+
+```
+/plugin install dschwartzi/inner-ralph
+```
+
+### Manual Prerequisites (if not using setup script)
 
 1. [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
 2. [Beads](https://github.com/steveyegge/beads) installed (`bd` command available)
 
-### Install the Plugin
-
-```bash
-# Install from GitHub
-/plugin install dschwartzi/inner-ralph
-```
-
-Or for local development:
-
-```bash
-# Clone and install locally
-git clone https://github.com/dschwartzi/inner-ralph.git
-/plugin install /path/to/inner-ralph
-```
-
 ## Quick Start
 
-Test it in under 2 minutes:
-
 ```bash
-# 1. Create a test directory
+# 1. Clone and run setup
+git clone https://github.com/dschwartzi/inner-ralph.git
+./inner-ralph/scripts/setup.sh
+
+# 2. Create a test project
 mkdir /tmp/ralph-test && cd /tmp/ralph-test
 git init
 
-# 2. Start Claude Code
+# 3. Start Claude Code and install plugin
 claude
-
-# 3. Install the plugin (inside Claude Code)
+# Then inside Claude Code:
 /plugin install dschwartzi/inner-ralph
 
 # 4. Try a dry run (no tasks created)
