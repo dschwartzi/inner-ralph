@@ -72,7 +72,7 @@ mkdir -p ~/.claude/skills
 cp -r inner-ralph/skills/inner-loop-ralph ~/.claude/skills/
 ```
 
-Restart Claude Code. The skill will be available as `/inner-loop-ralph`.
+No restart needed. The skill is immediately available as `/inner-loop-ralph`.
 
 #### Option 3: Just Use the Prompt
 
@@ -89,12 +89,11 @@ git clone https://github.com/dschwartzi/inner-ralph.git
 mkdir -p ~/.claude/skills
 cp -r inner-ralph/skills/inner-loop-ralph ~/.claude/skills/
 
-# 3. Restart Claude Code and try it
-claude
+# 3. Try it (no restart needed)
 /inner-loop-ralph --dry-run plan a birthday party
 ```
 
-That's it. Three steps.
+That's it. Three commands, works immediately.
 
 ### What to Expect
 
