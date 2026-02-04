@@ -61,6 +61,34 @@ git clone https://github.com/dschwartzi/inner-ralph.git
 /plugin install /path/to/inner-ralph
 ```
 
+## Quick Start
+
+Test it in under 2 minutes:
+
+```bash
+# 1. Create a test directory
+mkdir /tmp/ralph-test && cd /tmp/ralph-test
+git init
+
+# 2. Start Claude Code
+claude
+
+# 3. Install the plugin (inside Claude Code)
+/plugin install dschwartzi/inner-ralph
+
+# 4. Try a dry run (no tasks created)
+/inner-loop-ralph --dry-run outline a blog post about productivity tips
+
+# 5. Try the full flow
+/inner-loop-ralph research the top 3 note-taking apps
+```
+
+The dry run shows what tasks *would* be created. The full flow will:
+1. Initialize beads
+2. Show you the task breakdown
+3. Ask for your approval
+4. Execute autonomously (if you approve)
+
 ## Usage
 
 ### Direct Invocation
