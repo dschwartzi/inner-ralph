@@ -1,5 +1,7 @@
 # Inner Ralph: AI-Supervised Autonomous Agent Loops
 
+> **Status**: Conceptual approach / reference implementation. This documents a workflow pattern, not a packaged tool.
+
 An alternative approach to autonomous AI coding that uses **Claude Code as the orchestrator** instead of external bash scripts.
 
 ## The Problem with External Loops
@@ -43,7 +45,7 @@ Claude Code (Orchestrator)
 | Task creation | Manual PRD file | AI-generated from context |
 | Orchestration | Dumb bash loop | Intelligent Claude supervision |
 | Error handling | Fail and retry | Understand and adapt |
-| Context | Fresh each time (loses insight) | Persistent via [beads](https://github.com/dschwartzi/beads) |
+| Context | Fresh each time (loses insight) | Persistent via [beads](https://github.com/steveyegge/beads) |
 | Intervention | Kill script, edit PRD | Natural conversation |
 | Learning | `progress.txt` file | Accumulated context + beads comments |
 
@@ -51,15 +53,15 @@ Claude Code (Orchestrator)
 
 1. **AI understands the problem**: Claude reads your codebase and creates better task breakdowns than you would manually
 2. **Supervised autonomy**: The outer Claude session can intervene when subagents get stuck
-3. **Persistent state**: [Beads](https://github.com/dschwartzi/beads) provides git-backed issue tracking that survives context compaction
+3. **Persistent state**: [Beads](https://github.com/steveyegge/beads) provides git-backed issue tracking that survives context compaction
 4. **Course correction**: When something fails, Claude understands WHY and adjusts
 
 ## Quick Start
 
 ### Prerequisites
 
-- [Claude Code](https://claude.ai/code) CLI installed
-- [Beads](https://github.com/dschwartzi/beads) for task tracking
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
+- [Beads](https://github.com/steveyegge/beads) for task tracking
 
 ### Usage
 
@@ -149,6 +151,51 @@ This is the key insight: you don't need fresh instances if your state persists p
 - You value AI-generated planning
 - Context persistence via beads is acceptable
 
+## Technical Implementation
+
+Inner Ralph leverages two key Claude Code capabilities:
+
+### 1. The Task Tool (Subagents)
+
+Claude Code can spawn autonomous subagents using the `Task` tool. These subagents:
+- Run in the background with their own context
+- Have access to all the same tools (Bash, Read, Edit, etc.)
+- Report back to the orchestrator when complete or blocked
+- Can be monitored via `TaskOutput`
+
+```
+Orchestrator                    Subagent
+    │                              │
+    │──── Task(prompt) ───────────▶│
+    │                              │ works autonomously
+    │                              │ bd ready → implement
+    │                              │ bd close → repeat
+    │◀─── Result ─────────────────│
+    │                              │
+    ▼                              ▼
+ supervise                     execute
+```
+
+### 2. Beads for Persistent State
+
+[Beads](https://github.com/steveyegge/beads) is a git-backed issue tracker that:
+- Stores task state in `.beads/` directory (committed to git)
+- Survives context compaction (unlike conversation memory)
+- Supports dependencies (`bd dep add`)
+- Provides `bd ready` to find unblocked tasks
+- Recovers full context via `bd prime`
+
+### The Key Insight
+
+External Ralph (bash loop) uses **file I/O** for state:
+- `prd.json` - task definitions
+- `progress.txt` - learnings
+
+Inner Ralph uses **git-backed structured data**:
+- `.beads/` - task state with dependencies, comments, history
+- `bd` commands - query and update tasks
+- Git sync - state travels with the repo
+
 ## Architecture
 
 ```
@@ -202,13 +249,24 @@ When the user says `ralph: [description]` or `ralph [description]`:
 
 ## Contributing
 
-This is an experimental approach. Ideas welcome!
+This is an experimental approach. Share your experience:
+- Star the repo if you find this useful
+- Fork and experiment with your own variations
+- Discuss on Twitter/X with #InnerRalph
+
+## References
+
+- [Geoffrey Huntley's Original Ralph](https://ghuntley.com/ralph/) - The canonical origin story
+- [snarktank/ralph](https://github.com/snarktank/ralph) - Ryan Carson's implementation
+- [beads](https://github.com/steveyegge/beads) - Steve Yegge's git-backed issue tracker
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) - Anthropic's CLI
+- [Anthropic: Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) - Engineering best practices
 
 ## Credits
 
 - Inspired by [snarktank/ralph](https://github.com/snarktank/ralph) and Ryan Carson's Ralph Wiggum technique
-- Uses [beads](https://github.com/dschwartzi/beads) for persistent task tracking
-- Built for [Claude Code](https://claude.ai/code)
+- Uses [beads](https://github.com/steveyegge/beads) by Steve Yegge for persistent task tracking
+- Built for [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
 ## License
 
