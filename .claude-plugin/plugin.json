@@ -1,0 +1,20 @@
+{
+  "name": "inner-loop-ralph",
+  "version": "1.0.0",
+  "description": "AI-supervised autonomous agent loops using Claude Code as orchestrator with beads for persistent task tracking. An alternative to external bash loops.",
+  "author": {
+    "name": "dschwartzi",
+    "url": "https://github.com/dschwartzi"
+  },
+  "repository": "https://github.com/dschwartzi/inner-ralph",
+  "keywords": [
+    "ralph",
+    "autonomous",
+    "beads",
+    "subagent",
+    "task-tool",
+    "orchestration",
+    "ai-supervised"
+  ],
+  "license": "MIT"
+}
