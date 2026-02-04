@@ -1,11 +1,22 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "inner-ralph-marketplace",
-  "version": "1.0.0",
   "description": "Inner Loop Ralph plugin marketplace",
+  "owner": {
+    "name": "dschwartzi",
+    "url": "https://github.com/dschwartzi"
+  },
   "plugins": [
     {
       "name": "inner-loop-ralph",
-      "path": "."
+      "description": "AI-supervised autonomous agent loops using Claude Code as orchestrator with beads for persistent task tracking",
+      "version": "1.1.0",
+      "author": {
+        "name": "dschwartzi",
+        "url": "https://github.com/dschwartzi"
+      },
+      "source": "./",
+      "category": "productivity"
     }
   ]
 }
