@@ -44,15 +44,14 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 ### One-Line Setup
 
 ```bash
-# Clone and run setup (installs beads if needed)
 git clone https://github.com/dschwartzi/inner-ralph.git
 ./inner-ralph/scripts/setup.sh
 ```
 
-The setup script:
-- Checks for Claude Code
-- Installs [beads](https://github.com/steveyegge/beads) if not present
-- Verifies everything works
+The setup script is **safe to run multiple times** - it checks what's already installed:
+- Verifies Claude Code is present
+- Installs [beads](https://github.com/steveyegge/beads) only if not already installed
+- Won't overwrite existing installations
 
 ### Install the Plugin
 
@@ -62,6 +61,12 @@ Inside Claude Code:
 /plugin install dschwartzi/inner-ralph
 ```
 
+Or install from a local clone:
+
+```
+/plugin install /path/to/inner-ralph
+```
+
 ### Manual Prerequisites (if not using setup script)
 
 1. [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
@@ -69,26 +74,46 @@ Inside Claude Code:
 
 ## Quick Start
 
+### Option A: From Terminal
+
 ```bash
-# 1. Clone and run setup
+# Clone and run setup (safe to run if you already have beads installed)
 git clone https://github.com/dschwartzi/inner-ralph.git
 ./inner-ralph/scripts/setup.sh
 
-# 2. Create a test project
-mkdir /tmp/ralph-test && cd /tmp/ralph-test
-git init
-
-# 3. Start Claude Code and install plugin
+# Start Claude Code
 claude
-# Then inside Claude Code:
+
+# Inside Claude Code, install the plugin
 /plugin install dschwartzi/inner-ralph
 
-# 4. Try a dry run (no tasks created)
+# Try it
 /inner-loop-ralph --dry-run outline a blog post about productivity tips
-
-# 5. Try the full flow
-/inner-loop-ralph research the top 3 note-taking apps
 ```
+
+### Option B: From Inside Claude Code
+
+Already in a Claude Code session? Do it all from there:
+
+```
+# Ask Claude to set it up
+Clone the inner-ralph repo and run the setup script, then install the plugin
+
+# Or do it step by step:
+# 1. Clone
+git clone https://github.com/dschwartzi/inner-ralph.git /tmp/inner-ralph
+
+# 2. Run setup (Claude can run this for you)
+/tmp/inner-ralph/scripts/setup.sh
+
+# 3. Install plugin
+/plugin install /tmp/inner-ralph
+
+# 4. Try it
+/inner-loop-ralph --dry-run plan a weekend trip
+```
+
+### What to Expect
 
 The dry run shows what tasks *would* be created. The full flow will:
 1. Initialize beads
