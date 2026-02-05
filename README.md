@@ -1,6 +1,6 @@
 # Inner Loop Ralph
 
-**Status: Tested & Working** | v1.1.0 | [Changelog](CHANGELOG.md) | [Dogfooding Example](examples/dogfooding-session.md)
+**Status: Tested & Working** | v1.2.0 | [Changelog](CHANGELOG.md) | [Dogfooding Example](examples/dogfooding-session.md)
 
 AI-supervised autonomous agent loops for Claude Code using [beads](https://github.com/steveyegge/beads) for persistent task tracking.
 
@@ -37,7 +37,8 @@ Inner Ralph:     Claude Code → Create Tasks → Spawn Subagent → Supervise �
 - **Beads for persistence** - Task state survives context compaction via git-backed `.beads/` directory
 - **Intelligent orchestration** - Claude supervises subagents and can intervene when things go wrong
 - **Natural intervention** - Talk to Claude to course-correct, no need to kill scripts
-- **Built-in flags** - `--dry-run`, `--status`, `--cancel` for full control
+- **Reusable templates** - Save successful workflows, replay them later with different inputs
+- **Built-in flags** - `--dry-run`, `--status`, `--cancel`, `--template` for full control
 
 ## Installation
 
@@ -124,6 +125,21 @@ After installing the plugin, invoke directly:
 
 # Stop a running session
 /inner-loop-ralph --cancel
+
+# Use a saved template
+/inner-loop-ralph --template investigate-codebase ./new-project
+
+# Save current session as a template (after approval)
+/inner-loop-ralph --save-template my-template-name <task description>
+
+# List all saved templates
+/inner-loop-ralph --templates
+
+# View a template's contents
+/inner-loop-ralph --show-template investigate-codebase
+
+# Delete a template
+/inner-loop-ralph --delete-template old-template
 ```
 
 ### Example: Research Task
@@ -251,6 +267,44 @@ bd prime         # Recovers full context from beads
 ```
 
 Then continue seamlessly - all task state is preserved in `.beads/`.
+
+## Templates
+
+Templates let you capture successful workflows and replay them later. Instead of re-explaining how you like to investigate codebases or write documentation, save it once and reuse it.
+
+### Example: Create and Use a Template
+
+```
+# 1. Do a task and save it as a template
+> /inner-loop-ralph --save-template investigate-codebase understand this codebase architecture
+
+[Claude breaks it down, you approve, it executes successfully]
+
+Template 'investigate-codebase' saved.
+
+# 2. Later, use the template on a different project
+> /inner-loop-ralph --template investigate-codebase ./other-project
+
+[Claude loads the same task structure, applies it to the new target]
+```
+
+### What Gets Saved
+
+- **Task structure** - The PRD breakdown you approved (task titles, priorities, dependencies)
+- **Prompt pattern** - Your original request with `$ARGS` placeholder for variable parts
+- **Guardrails** - Any lessons learned during execution
+
+### Template Commands
+
+| Command | Purpose |
+|---------|---------|
+| `--save-template <name>` | Save current session after approval |
+| `--template <name> [args]` | Use a saved template |
+| `--templates` | List all saved templates |
+| `--show-template <name>` | View template contents |
+| `--delete-template <name>` | Remove a template |
+
+Templates are stored in `~/.claude/inner-ralph-templates/` and work across all projects.
 
 ## Comparison
 

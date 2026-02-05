@@ -30,6 +30,29 @@ Launch an AI-supervised autonomous loop that uses beads for task tracking and th
 - `$ARGUMENTS` - Description of what to accomplish
 - `--status` - Show progress of current/recent inner-ralph session
 - `--cancel` - Stop a running inner-ralph session
+- `--template <name>` - Use a saved template
+- `--save-template <name>` - Save current session as a template (use after approval)
+- `--templates` - List all saved templates
+- `--show-template <name>` - Show template contents
+- `--delete-template <name>` - Delete a template
+
+## Templates
+
+Templates are stored in `~/.claude/inner-ralph-templates/` as JSON files.
+
+**Template Schema:**
+```json
+{
+  "name": "template-name",
+  "description": "What this template does",
+  "prompt_pattern": "Original prompt with $ARGS placeholder",
+  "tasks": [
+    {"title": "Task 1", "priority": 0, "depends_on": []},
+    {"title": "Task 2", "priority": 1, "depends_on": [1]}
+  ],
+  "guardrails": ["Lesson learned 1", "Lesson learned 2"]
+}
+```
 
 ## Instructions
 
@@ -53,8 +76,71 @@ You are starting an Inner Loop Ralph session - an AI-supervised autonomous workf
 Check `$ARGUMENTS` for flags:
 - `--status`: If present, run `bd list` and `bd stats`, show progress, then STOP
 - `--cancel`: If present, show current tasks and offer to stop/clean up, then STOP
+- `--templates`: If present, list all saved templates, then STOP
+- `--show-template <name>`: If present, show template contents, then STOP
+- `--delete-template <name>`: If present, delete template after confirmation, then STOP
+- `--template <name>`: If present, load template and skip to Phase 2.5 with pre-populated plan
+- `--save-template <name>`: Note this flag for use after Phase 2.5 approval
 
 Extract the task description (everything that's not a flag).
+
+**Template Directory:** `~/.claude/inner-ralph-templates/`
+
+If `--templates` flag:
+```bash
+ls -1 ~/.claude/inner-ralph-templates/*.json 2>/dev/null | while read f; do
+  name=$(basename "$f" .json)
+  desc=$(cat "$f" | jq -r '.description // "No description"')
+  count=$(cat "$f" | jq '.tasks | length')
+  echo "  $name - $desc ($count tasks)"
+done
+```
+Output:
+```
+## 📋 Saved Templates
+
+[List each template: name - description (N tasks)]
+
+Use with: /inner-loop-ralph --template <name> [args]
+```
+Then STOP.
+
+If `--show-template <name>` flag:
+```bash
+cat ~/.claude/inner-ralph-templates/<name>.json | jq .
+```
+Output formatted template contents, then STOP.
+
+If `--delete-template <name>` flag:
+Ask for confirmation, then:
+```bash
+rm ~/.claude/inner-ralph-templates/<name>.json
+```
+Output "Template '<name>' deleted." then STOP.
+
+If `--template <name>` flag:
+1. Load template: `cat ~/.claude/inner-ralph-templates/<name>.json`
+2. Replace `$ARGS` in prompt_pattern with remaining arguments
+3. Skip to Phase 2.5 with tasks pre-populated from template
+4. Include template guardrails in subagent prompt
+
+If `--save-template <name>` flag is present:
+- Note the template name for later
+- Continue normal flow through Phase 2.5
+- After user approves the plan, save the template:
+```bash
+mkdir -p ~/.claude/inner-ralph-templates
+cat > ~/.claude/inner-ralph-templates/<name>.json << 'EOF'
+{
+  "name": "<name>",
+  "description": "<brief description>",
+  "prompt_pattern": "<original prompt with $ARGS for variable parts>",
+  "tasks": [<approved task list>],
+  "guardrails": [<any guardrails from this session>]
+}
+EOF
+```
+- Output "Template '<name>' saved. Use with: /inner-loop-ralph --template <name> [args]"
 
 If `--status` flag, output:
 ```

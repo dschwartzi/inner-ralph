@@ -4,17 +4,25 @@ All notable changes to inner-loop-ralph will be documented in this file.
 
 ## [1.2.0] - 2026-02-05
 
+### Added
+- **Templates feature** - Save successful workflows and replay them later
+  - `--save-template <name>` - Capture current session as a reusable template
+  - `--template <name> [args]` - Use a saved template with new inputs
+  - `--templates` - List all saved templates
+  - `--show-template <name>` - View template contents
+  - `--delete-template <name>` - Remove a template
+- Templates stored in `~/.claude/inner-ralph-templates/` (global, works across projects)
+- Template schema captures: task structure, prompt pattern with `$ARGS`, guardrails
+- Visual markers in approval prompt (emojis, horizontal rules)
+- Escape hatch asks user to choose between full workflow or direct exploration
+- Example session showing escape hatch flow in SKILL.md
+
 ### Changed
 - **BREAKING**: Removed `--dry-run` flag - plan preview is now always shown before task creation
 - Added mandatory approval gate (Phase 2.5) with strict format requirements
 - Added Task Type Check escape hatch for research/exploration tasks
 - Split task creation into Phase 2.6 (only runs after approval)
 - Strengthened constraint language with "VIOLATION IS FAILURE" block
-
-### Added
-- Visual markers in approval prompt (emojis, horizontal rules)
-- Escape hatch asks user to choose between full workflow or direct exploration
-- Example session showing escape hatch flow in SKILL.md
 
 ### Fixed
 - Prevents model from bypassing approval gate by using Task tool directly
