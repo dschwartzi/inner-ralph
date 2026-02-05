@@ -28,7 +28,6 @@ Launch an AI-supervised autonomous loop that uses beads for task tracking and th
 ## Arguments
 
 - `$ARGUMENTS` - Description of what to accomplish
-- `--dry-run` - Preview task breakdown without creating beads issues
 - `--status` - Show progress of current/recent inner-ralph session
 - `--cancel` - Stop a running inner-ralph session
 
@@ -37,18 +36,29 @@ Launch an AI-supervised autonomous loop that uses beads for task tracking and th
 <instruction>
 You are starting an Inner Loop Ralph session - an AI-supervised autonomous workflow.
 
-**Phase 0: Parse Arguments**
+## ⛔ MANDATORY CONSTRAINTS - VIOLATION IS FAILURE ⛔
+
+**These rules are absolute. Breaking them means the skill failed.**
+
+1. You MUST NOT spawn any Task/subagent until Phase 2.5 approval is received
+2. You MUST show the proposed task breakdown and WAIT for user response
+3. You MUST output the EXACT approval prompt format specified in Phase 2.5
+4. Skipping ANY phase is a protocol violation
+5. "Just doing it directly" without approval is NEVER acceptable when this skill is invoked
+
+---
+
+**Phase 0: Parse Arguments & Task Type Check**
 
 Check `$ARGUMENTS` for flags:
-- `--dry-run`: If present, show proposed tasks WITHOUT creating beads issues, then stop
-- `--status`: If present, run `bd list` and `bd stats`, show progress, then stop
-- `--cancel`: If present, show current tasks and offer to stop/clean up, then stop
+- `--status`: If present, run `bd list` and `bd stats`, show progress, then STOP
+- `--cancel`: If present, show current tasks and offer to stop/clean up, then STOP
 
 Extract the task description (everything that's not a flag).
 
-If `--status` flag:
+If `--status` flag, output:
 ```
-## Inner Ralph Status
+## 📊 Inner Ralph Status
 
 [Run bd list to show current tasks]
 [Run bd stats to show progress]
@@ -57,9 +67,9 @@ Subagent: [Check if any task is in_progress]
 ```
 Then STOP - do not continue to other phases.
 
-If `--cancel` flag:
+If `--cancel` flag, output:
 ```
-## Cancel Inner Ralph
+## ❌ Cancel Inner Ralph
 
 Current tasks:
 [Run bd list]
@@ -73,8 +83,27 @@ What would you like to do?
 ```
 Then STOP after user responds.
 
-If `--dry-run` flag: Continue to Phase 1 and 2, but in Phase 2 step 3,
-do NOT actually run `bd create`. Instead, just OUTPUT what tasks WOULD be created.
+**Task Type Check (Escape Hatch):**
+
+If the request appears to be simple exploration or research that doesn't need multi-step task tracking (e.g., "understand this codebase", "come up to speed", "find where X is implemented", "explain how Y works"), you MUST ask:
+
+```
+## 🤔 Task Type Check
+
+This looks like a research/exploration task rather than multi-step implementation work.
+
+**Should I:**
+1. **Use full Ralph workflow** - Create beads tasks, show plan, get approval, execute via subagent
+2. **Just explore directly** - Search/read files and report back without task overhead
+
+Which approach do you prefer?
+```
+
+Then STOP and WAIT for user response.
+- If user chooses option 1: Continue to Phase 1
+- If user chooses option 2: Do the exploration directly WITHOUT using this skill's workflow
+
+---
 
 **Phase 1: Initialize**
 
@@ -90,6 +119,8 @@ do NOT actually run `bd create`. Instead, just OUTPUT what tasks WOULD be create
    ```
    Include guardrails in subagent prompt (Phase 3) to prevent repeated failures
 
+---
+
 **Phase 2: Analyze & Plan**
 
 1. Scan the project to understand:
@@ -102,70 +133,72 @@ do NOT actually run `bd create`. Instead, just OUTPUT what tasks WOULD be create
    - Identify dependencies between subtasks
    - Aim for 3-7 subtasks (not too granular, not too broad)
 
-3. Create beads issues for each subtask:
+3. **DO NOT create beads issues yet.** First, show the proposed plan to the user.
 
-   **If `--dry-run` mode:**
-   Do NOT run `bd create`. Instead, output a preview:
-   ```
-   ## Dry Run Preview (no issues created)
+---
 
-   Would create the following tasks:
+**Phase 2.5: ⏸️ MANDATORY APPROVAL GATE**
 
-   | # | Title | Priority | Depends On |
-   |---|-------|----------|------------|
-   | 1 | [task title] | P[0-4] | - |
-   | 2 | [task title] | P[0-4] | #1 |
-   ...
-
-   Run without --dry-run to create these tasks.
-   ```
-   Then STOP - do not continue to Phase 2.5 or Phase 3.
-
-   **Normal mode:**
-   ```bash
-   bd create --title="<subtask title>" --type=task --priority=<0-4> --description="<detailed description with acceptance criteria>"
-   ```
-
-4. Set up dependencies between tasks:
-   ```bash
-   bd dep add <blocked-task> <blocking-task>
-   ```
-
-5. Show the user the task breakdown:
-   ```bash
-   bd list
-   bd blocked  # Show dependency graph
-   ```
-
-**Phase 2.5: Get User Approval**
-
-Present the task breakdown to the user and ask for approval before executing:
+**You MUST output this EXACT format before creating any beads issues or spawning any subagent:**
 
 ```
-## Proposed Task Breakdown
+---
+## ⏸️ Awaiting Your Approval
 
-I've analyzed the project and created the following tasks:
+**Proposed tasks:**
 
-[Show bd list output with task titles and dependencies]
+| # | Task | Priority | Depends On |
+|---|------|----------|------------|
+| 1 | [task title] | P[0-4] | - |
+| 2 | [task title] | P[0-4] | #1 |
+...
 
 **Summary:**
 - Total tasks: N
 - Ready to start: M (no blockers)
 - Blocked: K (waiting on dependencies)
 
-**Estimated approach:**
+**Approach:**
 [Brief description of the implementation strategy]
 
-Would you like me to proceed with this plan?
-- **Yes** - Start autonomous execution
-- **Modify** - Tell me what to change
-- **Cancel** - Delete these tasks and stop
+---
+
+**Proceed with this plan?**
+- Reply **"yes"** or **"go"** to create tasks and start execution
+- Reply with **modifications** to adjust the plan
+- Reply **"cancel"** to abort
+
+---
 ```
 
-Wait for user response before proceeding:
-- If "yes" or approved: Continue to Phase 3
-- If modification requested: Update tasks with `bd update` or `bd delete` and `bd create`, then re-present
-- If cancelled: Run `bd delete <all-task-ids>` and stop
+**Then STOP. Do not send another message. Do not use any tools. WAIT for user response.**
+
+After user responds:
+- If "yes", "go", or approved: Continue to Phase 2.6 (Create Tasks)
+- If modification requested: Adjust the plan and re-present Phase 2.5
+- If "cancel": Output "Cancelled. No tasks created." and STOP
+
+---
+
+**Phase 2.6: Create Tasks**
+
+Only after receiving approval, create the beads issues:
+
+```bash
+bd create --title="<subtask title>" --type=task --priority=<0-4> --description="<detailed description with acceptance criteria>"
+```
+
+Set up dependencies between tasks:
+```bash
+bd dep add <blocked-task> <blocking-task>
+```
+
+Confirm creation:
+```bash
+bd list
+```
+
+---
 
 **Phase 3: Execute via Subagent**
 
@@ -201,13 +234,15 @@ Wait for user response before proceeding:
 
 3. Report to user that autonomous execution has started:
    ```
-   Started autonomous execution. Monitor progress with:
+   🚀 Started autonomous execution. Monitor progress with:
    - `bd list` - See all tasks
    - `bd ready` - See available work
    - `bd show <id>` - See task details
 
    I'll report back when complete or blocked.
    ```
+
+---
 
 **Phase 4: Monitor & Report**
 
@@ -221,6 +256,8 @@ Wait for user response before proceeding:
    - Tasks completed
    - Tasks remaining (if any)
    - Any blockers encountered
+
+---
 
 **Error Handling**
 
@@ -253,41 +290,75 @@ Claude: Analyzing project...
 Found: Express.js API (package.json)
 Test command: npm test
 
-## Proposed Task Breakdown
+---
+## ⏸️ Awaiting Your Approval
 
-I've analyzed the project and created the following tasks:
+**Proposed tasks:**
 
-| ID | Task | Priority | Blocked By |
-|----|------|----------|------------|
-| inner-ralph-a1b | Set up JWT dependencies | P0 | - |
-| inner-ralph-c2d | Create auth middleware | P1 | a1b |
-| inner-ralph-e3f | Add login/register endpoints | P1 | a1b |
-| inner-ralph-g4h | Write auth tests | P2 | c2d, e3f |
-| inner-ralph-i5j | Add protected route examples | P2 | c2d |
+| # | Task | Priority | Depends On |
+|---|------|----------|------------|
+| 1 | Set up JWT dependencies | P0 | - |
+| 2 | Create auth middleware | P1 | #1 |
+| 3 | Add login/register endpoints | P1 | #1 |
+| 4 | Write auth tests | P2 | #2, #3 |
+| 5 | Add protected route examples | P2 | #2 |
 
-**Summary:** 5 tasks, 1 ready to start, 4 blocked
+**Summary:**
+- Total tasks: 5
+- Ready to start: 1 (no blockers)
+- Blocked: 4 (waiting on dependencies)
 
-**Approach:** First install jsonwebtoken and bcrypt, then create middleware
+**Approach:**
+First install jsonwebtoken and bcrypt, then create middleware
 for JWT verification, add auth endpoints, and finally add tests.
 
-Would you like me to proceed with this plan?
+---
+
+**Proceed with this plan?**
+- Reply **"yes"** or **"go"** to create tasks and start execution
+- Reply with **modifications** to adjust the plan
+- Reply **"cancel"** to abort
+
+---
 
 User: yes
 
-Claude: Starting autonomous execution...
+Claude: Creating tasks...
+[Creates beads issues]
 
-[Spawns subagent]
+🚀 Started autonomous execution...
 
 [Later]
 
 Completed 5/5 tasks:
-  ✓ inner-ralph-a1b: Set up JWT dependencies
-  ✓ inner-ralph-c2d: Create auth middleware
-  ✓ inner-ralph-e3f: Add login/register endpoints
-  ✓ inner-ralph-g4h: Write auth tests
-  ✓ inner-ralph-i5j: Add protected route examples
+  ✓ Set up JWT dependencies
+  ✓ Create auth middleware
+  ✓ Add login/register endpoints
+  ✓ Write auth tests
+  ✓ Add protected route examples
 
 All tests passing. Authentication system ready.
+```
+
+## Example: Research Task (Escape Hatch)
+
+```
+User: ralph: come up to speed with this codebase
+
+Claude:
+## 🤔 Task Type Check
+
+This looks like a research/exploration task rather than multi-step implementation work.
+
+**Should I:**
+1. **Use full Ralph workflow** - Create beads tasks, show plan, get approval, execute via subagent
+2. **Just explore directly** - Search/read files and report back without task overhead
+
+Which approach do you prefer?
+
+User: 2
+
+Claude: [Explores codebase directly and reports findings]
 ```
 
 ## Context Recovery
