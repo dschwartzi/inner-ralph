@@ -1,6 +1,6 @@
 # Inner Loop Ralph
 
-**Status: Tested & Working** | v1.2.0 | [Changelog](CHANGELOG.md) | [Dogfooding Example](examples/dogfooding-session.md)
+**Status: Tested & Working** | v1.3.0 | [Changelog](CHANGELOG.md) | [Dogfooding Example](examples/dogfooding-session.md)
 
 AI-supervised autonomous agent loops for Claude Code using [beads](https://github.com/steveyegge/beads) for persistent task tracking.
 
@@ -140,6 +140,12 @@ After installing the plugin, invoke directly:
 
 # Delete a template
 /inner-loop-ralph --delete-template old-template
+
+# Update to latest version (no restart needed)
+/inner-loop-ralph --reload
+
+# Show installed version
+/inner-loop-ralph --version
 ```
 
 ### Example: Research Task

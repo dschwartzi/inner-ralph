@@ -10,7 +10,7 @@
     {
       "name": "inner-loop-ralph",
       "description": "AI-supervised autonomous agent loops using Claude Code as orchestrator with beads for persistent task tracking",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "author": {
         "name": "dschwartzi",
         "url": "https://github.com/dschwartzi"

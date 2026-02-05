@@ -35,6 +35,8 @@ Launch an AI-supervised autonomous loop that uses beads for task tracking and th
 - `--templates` - List all saved templates
 - `--show-template <name>` - Show template contents
 - `--delete-template <name>` - Delete a template
+- `--reload` - Update to latest version from GitHub (no restart needed)
+- `--version` - Show installed version
 
 ## Templates
 
@@ -74,6 +76,8 @@ You are starting an Inner Loop Ralph session - an AI-supervised autonomous workf
 **Phase 0: Parse Arguments & Task Type Check**
 
 Check `$ARGUMENTS` for flags:
+- `--version`: If present, show version and STOP
+- `--reload`: If present, update from GitHub and STOP
 - `--status`: If present, run `bd list` and `bd stats`, show progress, then STOP
 - `--cancel`: If present, show current tasks and offer to stop/clean up, then STOP
 - `--templates`: If present, list all saved templates, then STOP
@@ -83,6 +87,33 @@ Check `$ARGUMENTS` for flags:
 - `--save-template <name>`: Note this flag for use after Phase 2.5 approval
 
 Extract the task description (everything that's not a flag).
+
+If `--version` flag:
+```bash
+cat ~/.claude/skills/inner-loop-ralph/SKILL.md | head -20 | grep -E "^(name|version):" || echo "inner-loop-ralph v1.3.0"
+```
+Output: `inner-loop-ralph v1.3.0`
+Then STOP.
+
+If `--reload` flag:
+```bash
+rm -rf /tmp/inner-ralph-update
+git clone --depth 1 https://github.com/dschwartzi/inner-ralph.git /tmp/inner-ralph-update
+cp -r /tmp/inner-ralph-update/skills/inner-loop-ralph ~/.claude/skills/
+VERSION=$(grep '"version"' /tmp/inner-ralph-update/.claude-plugin/plugin.json | sed 's/.*: *"\([^"]*\)".*/\1/')
+rm -rf /tmp/inner-ralph-update
+echo "Updated to v$VERSION"
+```
+Output:
+```
+## 🔄 Reloading Inner Loop Ralph
+
+Fetching latest from GitHub...
+Updated to v[X.Y.Z]
+
+No restart needed. New features available immediately.
+```
+Then STOP.
 
 **Template Directory:** `~/.claude/inner-ralph-templates/`
 

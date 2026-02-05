@@ -2,6 +2,16 @@
 
 All notable changes to inner-loop-ralph will be documented in this file.
 
+## [1.3.0] - 2026-02-05
+
+### Added
+- `--reload` flag - Update to latest version from GitHub without leaving Claude Code
+- `--version` flag - Show installed version
+- Self-updating capability: no restart needed after reload
+
+### Meta
+- Inner Loop Ralph can now update itself with a single command
+
 ## [1.2.0] - 2026-02-05
 
 ### Added
